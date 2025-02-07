@@ -1,8 +1,5 @@
-# guvi-mern-MYSQL
-Repo consist of MySQL task given by GUVI .
-The task is based on creating 3 tables and then inserting values , joining them ,extracting,modifying based on the asked situation. 
-
----------
+MYSQL task
+----
 -- creating the database
 create schema ecommerce;
 use ecommerce;
@@ -50,7 +47,7 @@ insert into customers (name,email,address) values
  (4,curdate() - interval 35 day,50),
  (5,curdate() - interval 30 day,150);
  
-  select * from orders;
+ -- select * from orders;
  
  insert into products (name,price,description) values
  ("prdA",150,"premium"),
@@ -73,12 +70,16 @@ FROM customers c
 JOIN orders o ON c.id = o.customer_id
 WHERE o.order_date >= CURDATE() - INTERVAL 30 DAY;
 
+
+
 -- 2)Get the total amount of all orders placed by each customer
  
  select c.id ,c.name,sum(o.total_amount) from 
  customers c left join orders o on
  c.id=o.customer_id
  group by c.id,c.name;
+
+ 
 
 -- 3)Update the price of Product C to 45.00.
 
@@ -88,15 +89,21 @@ SET SQL_SAFE_UPDATES = 0;
   where name = "prdC";
   
     -- select * from products;
+
+    
    
    -- 4) Add a new column discount to the products table.
    
    alter table products
    add column discount decimal(10,2) default 0.00;
+
+   
    
    -- 5) Retrieve the top 3 products with the highest price.
    
   select * from products order by price desc limit 3;
+
+  
   
   -- 6) Get the names of customers who have ordered Product A.
   
@@ -117,20 +124,45 @@ JOIN orders o ON c.id = o.customer_id
 JOIN products p ON o.product_id = p.id
 WHERE p.name = "prdA";
 
+
   
 -- 7)Join the orders and customers tables to retrieve the customer's name and order date for each order. 
 
 select c.name,o.order_date from customers c join
 orders o on c.id=o.customer_id;
 
+
+
 -- 8) Retrieve the orders with a total amount greater than 150.00.
 
 select * from orders where total_amount>150.00;
 
+
+
 -- 9)Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.
 
+	CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+select * from order_items;
+
+ -- Now we have the order_items table to store products per order, we should remove the total_amount column from the orders table. 
+-- This is because the total amount can now be calculated dynamically from the order_items table.
+
+ALTER TABLE orders
+DROP COLUMN total_amount;
 
 
 
+-- 10) Retrieve the average total of all orders.
 
+	SELECT AVG(oi.quantity * oi.price) AS avg_order_value
+    FROM order_items oi;
 
